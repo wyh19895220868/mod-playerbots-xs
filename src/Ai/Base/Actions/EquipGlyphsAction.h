@@ -9,8 +9,15 @@
 
 #include "Action.h"
 
+struct GlyphPropertiesEntry;
+struct ItemTemplate;
+
 // 1 = major, 2 = minor dans GlyphProperties.dbc
-enum class GlyphKind : uint32 { MAJOR = 1, MINOR = 2 };
+enum class GlyphKind : uint32
+{
+    MAJOR = 1,
+    MINOR = 2
+};
 
 class EquipGlyphsAction : public Action
 {
@@ -21,8 +28,8 @@ public:
     /// ---- Rendu public pour être utilisable par le cache global ----
     struct GlyphInfo
     {
-        GlyphPropertiesEntry const* prop;   ///< entrée GlyphProperties.dbc
-        ItemTemplate const*         proto;  ///< template de l’objet glyphe
+        GlyphPropertiesEntry const* prop;  ///< entrée GlyphProperties.dbc
+        ItemTemplate const* proto;         ///< template de l’objet glyphe
     };
 
 private:
@@ -31,8 +38,7 @@ private:
     static GlyphInfo const* GetGlyphInfo(uint32 itemId);
 
     /// Parse & valide la liste d’items glyphes
-    bool CollectGlyphs(std::vector<uint32> const& itemIds,
-                       std::vector<GlyphInfo const*>& out) const;
+    bool CollectGlyphs(std::vector<uint32> const& itemIds, std::vector<GlyphInfo const*>& out) const;
 };
 
 #endif
