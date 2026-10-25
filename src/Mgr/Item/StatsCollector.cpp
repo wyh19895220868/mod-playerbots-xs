@@ -5,6 +5,7 @@
  */
 
 #include "StatsCollector.h"
+
 #include "DBCStores.h"
 #include "ItemTemplate.h"
 #include "PlayerbotAI.h"
@@ -76,9 +77,11 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
                 if (type_ & CollectorType::MELEE)
                 {
                     if (proto->Spells[j].SpellPPMRate > 0.01f)
-                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / proto->Spells[j].SpellPPMRate)));
+                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f,
+                                          Milliseconds(static_cast<int>(60000 / proto->Spells[j].SpellPPMRate)));
                     else
-                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / 1.8f)));  // Default PPM = 1.8
+                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f,
+                                          Milliseconds(static_cast<int>(60000 / 1.8f)));  // Default PPM = 1.8
                 }
                 break;
             default:
@@ -95,7 +98,7 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
 
 void StatsCollector::CollectWeaponDamageStats(ItemTemplate const* proto, ScalingStatValuesEntry const* ssv)
 {
-    if (!proto->IsWeapon() || proto->Delay == 0)
+    if (proto->Class != ITEM_CLASS_WEAPON || proto->Delay == 0)
         return;
 
     int32 extraDps = ssv ? ssv->getDPSMod(proto->ScalingStatValue) : 0;
@@ -119,7 +122,8 @@ void StatsCollector::CollectWeaponDamageStats(ItemTemplate const* proto, Scaling
         dps += (minDamage + maxDamage) * 1000 / 2 / proto->Delay;
     }
 
-    if (proto->IsRangedWeapon())
+    if (proto->InventoryType == INVTYPE_RANGED || proto->InventoryType == INVTYPE_THROWN ||
+        proto->InventoryType == INVTYPE_RANGEDRIGHT)
     {
         stats[STATS_TYPE_RANGED_DPS] += dps;
         return;
@@ -236,8 +240,8 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Millise
                 if (spellCooldown.count() <= 2000 || spellInfo->GetDuration() == -1)
                     coverage = 1.0f;
                 else
-                    coverage =
-                        std::min(1.0f, (float)spellInfo->GetDuration() / (spellInfo->GetDuration() + spellCooldown.count()));
+                    coverage = std::min(
+                        1.0f, (float)spellInfo->GetDuration() / (spellInfo->GetDuration() + spellCooldown.count()));
 
                 multiplier *= coverage;
                 HandleApplyAura(effectInfo, multiplier, canNextTrigger, triggerCooldown);
